@@ -14,12 +14,13 @@ then
 	echo -n "Script instalado correctamente"
 elif [ $script = 2 ];
 then
-	read -p "Deseas Actualizar el WP-Cli 1(yes)/2(No) [ENTER]: " update
+	read -p "Deseas Actualizar el WP-ClI 1(yes)/2(No) [ENTER]: " update
 	if [ $update = 1 ];
 	then
 		cd $WPROUTE
 		curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 		find $VHOSTS -name "wp-cli*" -type d -exec cp $WPROUTE/wp-cli.phar {}/bin/ \;
+		echo -n "WP-CLI actualizado correctamente"
 	else
 		echo -n "Fin del script"
 	fi
