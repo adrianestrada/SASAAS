@@ -18,5 +18,5 @@ else if [$script = n]
 		curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 		find $VHOSTS -name "wp-cli*" -type d -exec cp $WPROUTE/wp-cli.phar {}/bin/ \;
 	else
-	fi
+	echo -n "Fin del script"
 fi
