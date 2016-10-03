@@ -10,7 +10,7 @@ if [$script = y]; then
 	curl -O https://raw.githubusercontent.com/adrianestrada/SASAAS/master/Linux/updatewpcli.sh
 	chmod +x updatewpcli.sh
 	echo "0 0 * * 0 root /root/.scripts/updatewpcli.sh" >> /etc/crontab
-elif [$script = n]
+elif [$script = n]; then
 	echo -n "Deseas Actualizar el WP-Cli y/n [ENTER]"
 	read update
 	if [$read = y]; then
