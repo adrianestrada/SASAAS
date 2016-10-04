@@ -2,7 +2,7 @@
 WPROUTE="/root/.scripts/"
 VHOSTS="/var/www/vhosts/"
 read -p "Deseas Instalar el script 1(Yes)/2(No) [ENTER]: " script
-
+#Descarga el scrip a ejecutar para actualizar el WP-CLI y pone un crontab para ejecutarlo cada semana
 if [ $script = 1 ];
 then
 	cd /root/
@@ -12,7 +12,7 @@ then
 	chmod +x updatewpcli.sh
 	echo "0 0 * * 0 root /root/.scripts/updatewpcli.sh" >> /etc/crontab
 	echo -n "Script instalado correctamente"
-elif [ $script = 2 ];
+elif [ $script = 2 ];#Actualiza el WP-CLI
 then
 	read -p "Deseas Actualizar el WP-ClI 1(yes)/2(No) [ENTER]: " update
 	if [ $update = 1 ];
