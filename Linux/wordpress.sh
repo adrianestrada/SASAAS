@@ -30,11 +30,11 @@ then
 server {
 	listen     *:80 default_server;
 
-	root /var/www/vhosts/zaveapp.com/public;
+	root /var/www/vhosts/"$nombre"/public;
 	index index.php index.html index.htm;
 
 	access_log /var/www/vhosts/"$nombre"/logs/nginx/access.log;
-	error_log /var/www/vhosts/zaveapp.com/logs/nginx/error.log warn;
+	error_log /var/www/vhosts/"$nombre"/logs/nginx/error.log warn;
 
 	server_name $nombre;
 	server_name www.$nombre;
@@ -73,9 +73,51 @@ then
 	#Creamos las carpetas con el mobre del vhost
 	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
 	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs && sudo mkdir -p /var/www/vhosts/$nombre/env/wp-cli/bin/
-	sudo touch /etc/nginx/sites-available/$nombre.conf
+	cd /etc/nginx/sites-available
+
+	cat <<-'EOF' > $nombre
+server {
+	listen     *:80 default_server;
+
+	root /var/www/vhosts/"$nombre"/public;
+	index index.php index.html index.htm;
+
+	access_log /var/www/vhosts/"$nombre"/logs/nginx/access.log;
+	error_log /var/www/vhosts/"$nombre"/logs/nginx/error.log warn;
+
+	server_name "$nombre";
+	server_name www."$nombre";
+
+	location / {
+	try_files $uri $uri/ /index.php?$args;
+	}	
+
+location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
+	return 404;
+	}	
+
+location ~ \.php$ {
+	limit_req zone=noflood burst=15;
+	try_files $uri =404;
+	fastcgi_pass 127.0.0.1:9000;
+	fastcgi_index index.php;
+	fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+	include fastcgi_params;
+	}	
+
+location ~ /\. {
+	deny all;
+	}
+}
+EOF
+	read -p "Deseas Instalar el WP-ClI 1(yes)/2(No) [ENTER]: " install
+	if [ $install = 1 ];
+	then
 	#Instalar wp-cli para wordpress
 	echo -n "Descargando wp-cli"
-	cd /var/www/vhosts/$nombre/env/wp-cli/bin/
-	curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-	
+		cd /var/www/vhosts/$nombre/env/wp-cli/bin/
+		curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+	else
+		mkdir -p /var/www/vhost/$nombre/logs/nginx
+		
+
