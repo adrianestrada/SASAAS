@@ -76,7 +76,7 @@ EOF
 	netstat -atp tcp | grep -i "listen"
 	        read -p "Escribe el puerto a usar por PHP5-FPM [Enter]: " puerto
 	cat << EOF > $nombre.conf
-		[$nombre]
+		[$user]
 		user = $user
 		group = $user
 		listen = 127.0.0.1:$puerto
@@ -162,7 +162,7 @@ EOF
 	netstat -atp tcp | grep -i "listen"
 	read -p "Escribe el puerto a usar por PHP5-FPM [Enter]: " puerto
 cat << EOF > $nombre.conf
-[$nombre]
+[$user]
 user = $user
 group = $user
 listen = 127.0.0.1:$puerto
