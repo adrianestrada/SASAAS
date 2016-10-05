@@ -26,7 +26,7 @@ then
 	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
 	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs && sudo mkdir -p /var/www/vhosts/$nombre/env/wp-cli/bin/
 	cd /etc/nginx/sites-available
-	cat <<-'EOF' > $nombre.conf
+	cat << EOF > $nombre.conf
 server {
 	listen     *:80 default_server;
 
@@ -40,7 +40,7 @@ server {
 	server_name www.$nombre;
 
 	location / {
-	try_files $uri $uri/ /index.php?$args;
+	try_files \$uri \$uri/ /index.php?\$args;
 	}	
 
 location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
@@ -49,10 +49,10 @@ location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
 
 location ~ \.php$ {
 	limit_req zone=noflood burst=15;
-	try_files $uri =404;
+	try_files \$uri =404;
 	fastcgi_pass 127.0.0.1:9000;
 	fastcgi_index index.php;
-	fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
 	include fastcgi_params;
 	}	
 
@@ -60,7 +60,7 @@ location ~ /\. {
 	deny all;
 	}
 }
-	EOF
+EOF
 	#Instalar wp-cli para wordpress
 	echo -n "Descargando wp-cli"
 	cd /var/www/vhosts/$nombre/env/wp-cli/bin/
@@ -74,38 +74,35 @@ then
 	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
 	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs
 	cd /etc/nginx/sites-available
-
-	cat <<-'EOF' > $nombre
+cat << EOF > $nombre.conf
 server {
-	listen     *:80 default_server;
-
+        listen     *:80 default_server;
 	root /var/www/vhosts/"$nombre"/public;
 	index index.php index.html index.htm;
 
 	access_log /var/www/vhosts/"$nombre"/logs/nginx/access.log;
 	error_log /var/www/vhosts/"$nombre"/logs/nginx/error.log warn;
 
-	server_name "$nombre";
-	server_name www."$nombre";
+        server_name $nombre;
+        server_name www.$nombre;
 
 	location / {
-	try_files $uri $uri/ /index.php?$args;
-	}	
-
-location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
+        try_files \$uri \$uri/ /index.php?\$args;
+									        }       
+	location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
 	return 404;
-	}	
+	}       
 
-location ~ \.php$ {
+	location ~ \.php$ {
 	limit_req zone=noflood burst=15;
-	try_files $uri =404;
+	try_files \$uri =404;
 	fastcgi_pass 127.0.0.1:9000;
 	fastcgi_index index.php;
-	fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
 	include fastcgi_params;
-	}	
+	}       
 
-location ~ /\. {
+	location ~ /\. {
 	deny all;
 	}
 }
