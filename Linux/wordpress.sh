@@ -25,49 +25,13 @@ then
 	#Creamos las carpetas con el mobre del vhost
 	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
 	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs && sudo mkdir -p /var/www/vhosts/$nombre/env/wp-cli/bin/
-	cd /etc/nginx/sites-available
-	cat << EOF > $nombre.conf
-server {
-	listen     *:80 default_server;
-
-	root /var/www/vhosts/"$nombre"/public;
-	index index.php index.html index.htm;
-
-	access_log /var/www/vhosts/"$nombre"/logs/nginx/access.log;
-	error_log /var/www/vhosts/"$nombre"/logs/nginx/error.log warn;
-
-	server_name $nombre;
-	server_name www.$nombre;
-
-	location / {
-	try_files \$uri \$uri/ /index.php?\$args;
-	}	
-
-location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
-	return 404;
-	}	
-
-location ~ \.php$ {
-	limit_req zone=noflood burst=15;
-	try_files \$uri =404;
-	fastcgi_pass 127.0.0.1:9000;
-	fastcgi_index index.php;
-	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-	include fastcgi_params;
-	}	
-
-location ~ /\. {
-	deny all;
-	}
-}
-EOF
 	#Instalar wp-cli para wordpress
 	echo -n "Descargando wp-cli"
 	cd /var/www/vhosts/$nombre/env/wp-cli/bin/
 	curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 	# Creamos el grupo logs para poder administrar nuestros logs de nginx
 	sudo groupadd logs
-	mkdir -p /var/www/vhost/$nombre/logs/nginx
+	mkdir -p /var/www/vhosts/$nombre/logs/nginx
 	read -p "Introduce el nombre de usuario de la app [ENTER]: " user
 	sudo useradd $user -Umd /home/$user -G logs,www-data -s /bin/zsh
 	sudo chown $user.$user -R /var/www/vhosts/$nombre/
@@ -90,6 +54,44 @@ EOF
 		pm.min_spare_servers = 1
 		pm.max_spare_servers = 3
 EOF
+	cd /etc/nginx/sites-available
+	cat << EOF > $nombre
+server {
+	listen     *:80 default_server;
+
+	root /var/www/vhosts/$nombre/public;
+	index index.php index.html index.htm;
+
+	access_log /var/www/vhosts/$nombre/logs/nginx/access.log;
+	error_log /var/www/vhosts/$nombre/logs/nginx/error.log warn;
+
+	server_name $nombre;
+	server_name www.$nombre;
+
+	location / {
+	try_files \$uri \$uri/ /index.php?\$args;
+	}	
+
+location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
+	return 404;
+}	
+
+location ~ \.php$ {
+	limit_req zone=noflood burst=15;
+	try_files \$uri =404;
+	fastcgi_pass 127.0.0.1:$puerto;
+	fastcgi_index index.php;
+	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+	include fastcgi_params;
+	}	
+
+location ~ /\. {
+	deny all;
+	}
+}
+EOF
+	cd /etc/nginx/sites-enabled/
+	ln -s ../sites-available/$nombre .
 	service php5-fpm restart
 	service nginx restart
 	su -l $user -c '(umask 0077; mkdir .ssh) && (umask 0177; touch .ssh/authorized_keys)'
@@ -118,41 +120,7 @@ then
 	#Creamos las carpetas con el mobre del vhost
 	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
 	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs
-	cd /etc/nginx/sites-available
-cat << EOF > $nombre.conf
-server {
-        listen     *:80 default_server;
-	root /var/www/vhosts/"$nombre"/public;
-	index index.php index.html index.htm;
-
-	access_log /var/www/vhosts/"$nombre"/logs/nginx/access.log;
-	error_log /var/www/vhosts/"$nombre"/logs/nginx/error.log warn;
-
-        server_name $nombre;
-        server_name www.$nombre;
-
-	location / {
-        try_files \$uri \$uri/ /index.php?\$args;
-									        }       
-	location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
-	return 404;
-	}       
-
-	location ~ \.php$ {
-	limit_req zone=noflood burst=15;
-	try_files \$uri =404;
-	fastcgi_pass 127.0.0.1:9000;
-	fastcgi_index index.php;
-	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-	include fastcgi_params;
-	}       
-
-	location ~ /\. {
-	deny all;
-	}
-}
-EOF
- 	mkdir -p /var/www/vhost/$nombre/logs/nginx
+ 	mkdir -p /var/www/vhosts/$nombre/logs/nginx
         read -p "Introduce el nombre de usuario de la app [ENTER]: " user
 	sudo useradd $user -Umd /home/$user -G logs,www-data -s /bin/zsh
 	sudo chown $user.$user -R /var/www/vhosts/$nombre/
@@ -176,6 +144,43 @@ pm.start_servers = 2
 pm.min_spare_servers = 1
 pm.max_spare_servers = 3
 EOF
+
+	cd /etc/nginx/sites-available
+cat << EOF > $nombre
+server {
+        listen     *:80;
+	root /var/www/vhosts/"$nombre"/public;
+	index index.php index.html index.htm;
+
+	access_log /var/www/vhosts/"$nombre"/logs/nginx/access.log;
+	error_log /var/www/vhosts/"$nombre"/logs/nginx/error.log warn;
+
+        server_name $nombre;
+        server_name www.$nombre;
+
+	location / {
+        try_files \$uri \$uri/ /index.php?\$args;
+									        }       
+	location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
+	return 404;
+	}       
+
+	location ~ \.php$ {
+	limit_req zone=noflood burst=15;
+	try_files \$uri =404;
+	fastcgi_pass 127.0.0.1:$puerto;
+	fastcgi_index index.php;
+	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+	include fastcgi_params;
+	}       
+
+	location ~ /\. {
+	deny all;
+	}
+}
+EOF
+	cd /etc/nginx/sites-enabled/
+	ln -s ../sites-available/$nombre .
 	service php5-fpm restart
 	service nginx restart
 	su -l $user -c '(umask 0077; mkdir .ssh) && (umask 0177; touch .ssh/authorized_keys)'
