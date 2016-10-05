@@ -72,7 +72,7 @@ then
 	read -p "Introduce el nombre del vhost para crear la carpeta y presiona [ENTER]: " nombre
 	#Creamos las carpetas con el mobre del vhost
 	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
-	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs && sudo mkdir -p /var/www/vhosts/$nombre/env/wp-cli/bin/
+	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs
 	cd /etc/nginx/sites-available
 
 	cat <<-'EOF' > $nombre
@@ -110,14 +110,29 @@ location ~ /\. {
 	}
 }
 EOF
+ 	mkdir -p /var/www/vhost/$nombre/logs/nginx
+        read -p "Introduce el nombre de usuario de la app [ENTER]: " user
+	sudo useradd $user -Umd /home/$user -G logs,www-data -s /bin/zsh
+	sudo chown $user.$user -R /var/www/vhosts/$nombre/
+	sudo chown root.logs -R /var/www/vhosts/$nombre/logs/nginx
+	su -l $user -c '(umask 0077; mkdir .ssh) && (umask 0177; touch .ssh/authorized_keys)'
+	su -l $user -c 'wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh'
+	sudo -u $user sed -i 's/ZSH_THEME=\"\(\w\+\)\"/ZSH_THEME="dst"/' /home/$user/.zshrc
+
+	echo "umask 027" | su -l $user -c 'cat > .zprofile'
+	echo "export SITE_DIR=/var/www/vhosts/$nombre" | su -l $user -c 'cat >> .zprofile'
+	echo "echo '\n\033[1;36mPara referirte al directorio de tu proyecto utiliza la variable \$SITE_DIR\033[0m'" | su -l $user -c 'cat >> .zprofile'
+
 	read -p "Deseas Instalar el WP-ClI 1(yes)/2(No) [ENTER]: " install
 	if [ $install = 1 ];
 	then
 	#Instalar wp-cli para wordpress
 	echo -n "Descargando wp-cli"
+		sudo mkdir -p /var/www/vhosts/$nombre/env/wp-cli/bin/
 		cd /var/www/vhosts/$nombre/env/wp-cli/bin/
 		curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+		echo "source /var/www/vhosts/$nombre/env/" | su -l $user -c 'cat >> .zprofile'
 	else
-		mkdir -p /var/www/vhost/$nombre/logs/nginx
-		
-
+		echo -n "Fin del script"
+	fi
+fi
