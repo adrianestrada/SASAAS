@@ -16,7 +16,7 @@ then
 	sudo apt-get install -y htop tree vim zsh git nginx-full mariadb-server 
 	#Instalar php5 y sus plugins
 	echo -n "Instalando PHP5 y plugins"
-	sudo apt-get install -y php5 php5-mysqlnd php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcache php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl
+	sudo apt-get install -y php5 php5-fpm php5-mysqlnd php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcache php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl
 	# creando directorio donde estaran los vhosts y las configuraciones del nginx
 	echo -n "Creando el directorio de los vhosts y configuraciones del Nginx"
 	sudo mkdir -p /var/www/vhosts && sudo mkdir -p /etc/nginx/sites-enabled && sudo mkdir -p /etc/nginx/sites-available
@@ -75,10 +75,10 @@ EOF
 	cd /etc/php5/fpm/pool.d/
 	netstat -atp tcp | grep -i "listen"
 	        read -p "Escribe el puerto a usar por PHP5-FPM [Enter]: " puerto
-		cat << EOF > $nombre.conf
+	cat << EOF > $nombre.conf
 		[$nombre]
-		user = vinco
-		group = vinco
+		user = $user
+		group = $user
 		listen = 127.0.0.1:$puerto
 		listen.owner = $user
 		listen.group = $user
@@ -157,6 +157,27 @@ EOF
 	sudo useradd $user -Umd /home/$user -G logs,www-data -s /bin/zsh
 	sudo chown $user.$user -R /var/www/vhosts/$nombre/
 	sudo chown root.logs -R /var/www/vhosts/$nombre/logs/nginx
+	echo -n "Instalando el archivo de PHP5-FPM"
+	cd /etc/php5/fpm/pool.d/
+	netstat -atp tcp | grep -i "listen"
+	read -p "Escribe el puerto a usar por PHP5-FPM [Enter]: " puerto
+cat << EOF > $nombre.conf
+[$nombre]
+user = $user
+group = $user
+listen = 127.0.0.1:$puerto
+listen.owner = $user
+listen.group = $user
+listen.mode = 0640
+                 
+pm = dynamic
+pm.max_children = 5
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+EOF
+	service php5-fpm restart
+	service nginx restart
 	su -l $user -c '(umask 0077; mkdir .ssh) && (umask 0177; touch .ssh/authorized_keys)'
 	su -l $user -c 'wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh'
 	sudo -u $user sed -i 's/ZSH_THEME=\"\(\w\+\)\"/ZSH_THEME="dst"/' /home/$user/.zshrc
