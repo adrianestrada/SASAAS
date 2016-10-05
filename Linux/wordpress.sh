@@ -73,6 +73,7 @@ EOF
 	sudo chown $user.$user -R /var/www/vhosts/$nombre/
 	sudo chown root.logs -R /var/www/vhosts/$nombre/logs/nginx
 	cd /etc/php5/fpm/pool.d/
+	netstat -atp tcp | grep -i "listen"
 	        read -p "Escribe el puerto a usar por PHP5-FPM [Enter]: " puerto
 		cat << EOF > $nombre.conf
 		[$nombre]
@@ -89,7 +90,8 @@ EOF
 		pm.min_spare_servers = 1
 		pm.max_spare_servers = 3
 EOF
-
+	service php5-fpm restart
+	service nginx restart
 	su -l $user -c '(umask 0077; mkdir .ssh) && (umask 0177; touch .ssh/authorized_keys)'
 	su -l $user -c 'wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh'
 	sudo -u $user sed -i 's/ZSH_THEME=\"\(\w\+\)\"/ZSH_THEME="dst"/' /home/$user/.zshrc
