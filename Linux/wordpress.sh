@@ -72,6 +72,24 @@ EOF
 	sudo useradd $user -Umd /home/$user -G logs,www-data -s /bin/zsh
 	sudo chown $user.$user -R /var/www/vhosts/$nombre/
 	sudo chown root.logs -R /var/www/vhosts/$nombre/logs/nginx
+	cd /etc/php5/fpm/pool.d/
+	        read -p "Escribe el puerto a usar por PHP5-FPM [Enter]: " puerto
+		cat << EOF > $nombre.conf
+		[$nombre]
+		user = vinco
+		group = vinco
+		listen = 127.0.0.1:$puerto
+		listen.owner = $user
+		listen.group = $user
+		listen.mode = 0640
+		 
+		pm = dynamic
+		pm.max_children = 5
+		pm.start_servers = 2
+		pm.min_spare_servers = 1
+		pm.max_spare_servers = 3
+EOF
+
 	su -l $user -c '(umask 0077; mkdir .ssh) && (umask 0177; touch .ssh/authorized_keys)'
 	su -l $user -c 'wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh'
 	sudo -u $user sed -i 's/ZSH_THEME=\"\(\w\+\)\"/ZSH_THEME="dst"/' /home/$user/.zshrc
