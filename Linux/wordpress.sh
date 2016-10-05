@@ -23,8 +23,8 @@ then
 	echo -n "Introduce el nombre del vhost para crear la carpeta y presiona [ENTER]"
 	read nombre
 	#Creamos las carpetas con el mobre del vhost
-	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
-	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs && sudo mkdir -p /var/www/vhosts/$nombre/env/wp-cli/bin/
+	echo -n "Creando carpetas de nginx con el nombre del vhost\n"
+	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs
 	#Instalar wp-cli para wordpress
 	echo -n "Descargando wp-cli"
 	cd /var/www/vhosts/$nombre/env/wp-cli/bin/
@@ -118,7 +118,7 @@ elif [ $script = 2 ];
 then
 	read -p "Introduce el nombre del vhost para crear la carpeta y presiona [ENTER]: " nombre
 	#Creamos las carpetas con el mobre del vhost
-	echo -n "Creando carpetas y archvivos de nginx con el nombre del vhost"
+	echo -n "Creando carpetas de nginx con el nombre del vhost\n"
 	sudo mkdir -p /var/www/vhosts/$nombre/public && sudo mkdir /var/www/vhosts/$nombre/logs
  	mkdir -p /var/www/vhosts/$nombre/logs/nginx
         read -p "Introduce el nombre de usuario de la app [ENTER]: " user
