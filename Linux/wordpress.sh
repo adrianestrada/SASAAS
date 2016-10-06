@@ -184,6 +184,12 @@ EOF
 	ln -s ../sites-available/$nombre .
 	service php5-fpm restart
 	service nginx restart
+	#Instalación de la Base de Datos
+	read -p "Introduce la contraseña para el usuario $user en la base de datos $nombre y presiona [ENTER]: \n" passdb
+	mysql << EOF
+	use mysql;
+	show tables;
+EOF
 	su -l $user -c '(umask 0077; mkdir .ssh) && (umask 0177; touch .ssh/authorized_keys)'
 	su -l $user -c 'wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh'
 	sudo -u $user sed -i 's/ZSH_THEME=\"\(\w\+\)\"/ZSH_THEME="dst"/' /home/$user/.zshrc
