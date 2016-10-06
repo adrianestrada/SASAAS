@@ -149,21 +149,22 @@ EOF
 cat << EOF > $nombre
 server {
         listen     *:80;
-	root /var/www/vhosts/"$nombre"/public;
+	root /var/www/vhosts/$nombre/public;
 	index index.php index.html index.htm;
 
-	access_log /var/www/vhosts/"$nombre"/logs/nginx/access.log;
-	error_log /var/www/vhosts/"$nombre"/logs/nginx/error.log warn;
+	access_log /var/www/vhosts/$nombre/logs/nginx/access.log;
+	error_log /var/www/vhosts/$nombre/logs/nginx/error.log warn;
 
         server_name $nombre;
         server_name www.$nombre;
 
 	location / {
         try_files \$uri \$uri/ /index.php?\$args;
-									        }       
+	}       
+	
 	location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt|xmlrpc.php) {
 	return 404;
-	}       
+	}
 
 	location ~ \.php$ {
 	limit_req zone=noflood burst=15;
